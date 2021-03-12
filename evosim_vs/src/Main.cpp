@@ -76,7 +76,7 @@ int main() {
 	testVertices.PushIndexRow({0, 1, 2, 2, 3, 0});
 	testVertices.PushIndexRow({4, 5, 6, 6, 7, 4});
 
-	testVertices.BufferData();
+	testVertices.BufferStaticData();
 
 	unsigned int scaleLoc = glGetUniformLocation(shader.ID, "scale");
 
