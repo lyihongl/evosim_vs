@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <vector>
+#include <optional>
 
 namespace EvoSim {
 struct VertexArray {
@@ -19,6 +20,7 @@ struct VertexArray {
 	void PushIndexRow(std::vector<uint32_t> &&indexRow);
 	void BufferStaticData();
 	void AllocateDynamicVa(std::size_t size);
+	void BufferDynamicData(std::optional<std::size_t> index = std::nullopt);
 	std::size_t VertexSizeBytes() const;
 	const float *VertexData() const;
 
