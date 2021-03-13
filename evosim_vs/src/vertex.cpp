@@ -1,7 +1,23 @@
+#include <tuple>
 #include "../inc/vertex.h"
-EvoSim::VertexArray::VertexArray(const std::size_t& cols,
-	std::vector<std::size_t>&& attribPoints)
-	: cols{ cols } {
+#include "../inc/logging.h"
+//template<typename T>
+//void EvoSim::VertexArray<T>::SetOffsets(std::vector<std::size_t>&& offsets) {
+//	this->Offsets = std::move(offsets);
+//}
+/*
+EvoSim::VertexArray::VertexArray(const std::size_t cols,
+	const std::vector<std::size_t>&& attribPoints)
+	: cols{ cols }, DynamicBufferFill{ 0 }{
+	this->attribPoints = attribPoints;
+	std::cout << attribPoints.size() << std::endl;
+	glGenVertexArrays(1, &StaticVAO);
+	glGenBuffers(1, &StaticVBO);
+	glGenBuffers(1, &StaticEBO);
+}
+EvoSim::VertexArray::VertexArray(const std::size_t cols, 
+	const std::vector<std::size_t>& attribPoints) 
+	: cols{ cols }, DynamicBufferFill{ 0 }{
 	this->attribPoints = attribPoints;
 	std::cout << attribPoints.size() << std::endl;
 	glGenVertexArrays(1, &StaticVAO);
@@ -44,7 +60,7 @@ void EvoSim::VertexArray::BufferStaticData() {
 		this->IndexData(), GL_STATIC_DRAW);
 
 	std::cout << "cols: " << cols << std::endl;
-	for (int i = 0; i < attribPoints.size(); i++) {
+	for (std::size_t i = 0; i < attribPoints.size(); i++) {
 		std::cout << "i: " << i << " "
 			<< (i == attribPoints.size() - 1
 				? cols - attribPoints[i]
@@ -80,19 +96,50 @@ void EvoSim::VertexArray::AllocateDynamicVa(std::size_t size) {
 	glBindVertexArray(DynamicVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, DynamicVBO);
 	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, DynamicVBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
 void EvoSim::VertexArray::BufferDynamicData(std::optional<std::size_t> index) {
 	glBindVertexArray(DynamicVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, DynamicVBO);
+	std::cout <<index.has_value()<<" "<< index.value_or(this->DynamicBufferFill) << std::endl;
 	glBufferSubData(GL_ARRAY_BUFFER, index.value_or(this->DynamicBufferFill), this->VertexSizeBytes(), Vertices.data());
+	int data[] = { 0, 1, 2, 2, 3, 0 };
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, DynamicEBO);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, 6 * sizeof(int), data);
 
 	this->DynamicBufferFill = index.has_value() ?
 		index.value() + this->VertexSizeBytes() :
 		this->DynamicBufferFill + this->VertexSizeBytes();
 
-	Vertices.clear();
+	std::cout << "cols: " << cols << std::endl;
+	for (std::size_t i = 0; i < attribPoints.size(); i++) {
+template<class ...Types>
+inline VertexArray<Types...>::VertexArray(Types ...args)
+{
+}
+		std::cout << "i: " << i << " "
+			<< (i == attribPoints.size() - 1
+				? cols - attribPoints[i]
+				: attribPoints[i + 1] - attribPoints[i])
+			<< " " << attribPoints[i]
+			<< std::endl;
+
+		glVertexAttribPointer(
+			i,
+			i == attribPoints.size() - 1 ? cols - attribPoints[i]
+			: attribPoints[i + 1] - attribPoints[i],
+			GL_FLOAT, GL_FALSE, cols * sizeof(float),
+			(void*)(attribPoints[i] * sizeof(float)));
+		glEnableVertexAttribArray(i);
+	}
+
+	//Vertices.clear();
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 std::size_t EvoSim::VertexArray::IndexSizeBytes() const {
 	return sizeof(uint32_t) * Indices.size();
@@ -100,3 +147,4 @@ std::size_t EvoSim::VertexArray::IndexSizeBytes() const {
 const uint32_t* EvoSim::VertexArray::IndexData() const {
 	return Indices.data();
 }
+*/

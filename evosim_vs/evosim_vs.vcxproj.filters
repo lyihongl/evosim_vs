@@ -41,9 +41,14 @@
     <ClInclude Include="inc\circle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\logging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="src\shaders\test.frag" />
     <None Include="src\shaders\test.vert" />
+    <None Include="src\shaders\triangle.frag" />
+    <None Include="src\shaders\triangle.vert" />
   </ItemGroup>
 </Project>
