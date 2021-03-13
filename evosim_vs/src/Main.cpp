@@ -65,41 +65,36 @@ int main() {
 
 	Shader shader("./src/shaders/test.vert", "./src/shaders/test.frag");
 	EvoSim::VertexArray<float> va;
-	va.SetOffsets(7, { 0,2,5 });
+	va.SetOffsets(2, { 0,2,5 });
 	EvoSim::VertexManager vm{};
 
 	vm.CreateArrayObj("testVertices");
 	vm.CreateBufferObj("vBuf", EvoSim::VertexManager::BufferType::Vertex);
 	vm.CreateBufferObj("eBuf", EvoSim::VertexManager::BufferType::Element);
+	vm.CreateBufferObj("vInst", EvoSim::VertexManager::BufferType::Vertex);
 	log(vm.VertexArrayObjects.find("testVertices")->second);
 	log(vm.VertexArrayBuffers.find("vBuf")->second);
 	log(vm.VertexElementBuffers.find("eBuf")->second);
-
-	//va.AddData({ -0.5f, -0.5f });
-	//va.AddData({ 0.5f, -0.5f });
-	//va.AddData({ 0.0f, 0.5f });
 
 	for (auto it : va.Data) {
 		log("data " << it);
 	}
 
-	//glBindVertexArray(vm.VertexArrayObjects.find("testVertices")->second);
-	//glBindBuffer(GL_ARRAY_BUFFER, vm.VertexArrayBuffers.find("vBuf")->second);
-	//glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), va.Data.data(), GL_STATIC_DRAW);
+	std::vector<glm::vec2> positions;
+	for (int i = 0; i < 10; i++) {
+		for (int j = 0; j < 10; j++) {
+			positions.push_back({ (float)i / 5 - 1, (float)j / 5 - 1});
+			log(positions.back().x);
+		}
+	}
+	glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInst"));
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, positions.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	//glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-	//glEnableVertexAttribArray(0);
-
-	//EvoSim::Circle c{};
-	//EvoSim::VertexArray testVertices(7, EvoSim::Circle::AttribPoints);
-	//EvoSim::VertexArray testVertices(7, {0, 2, 5});
-	//testVertices.AllocateDynamicVa(1024);
-	//c.AddtoVa(testVertices);
-
-	va.AddData({ 0.1f, -0.1f, 1.0f, 0, 0, 0, 0 });
-	va.AddData({ -0.1f, -0.1f, 1.0f, 0.5f, 0, 0, 0 });
-	va.AddData({ -0.1f, 0.1f, 1.0f, 0, 0, 0, 0 });
-	va.AddData({ 0.1f, 0.1f, 1.0f, 0, 1.0f, 0, 0 });
+	va.AddData({ 0.1f, -0.1f});
+	va.AddData({ -0.1f, -0.1f});
+	va.AddData({ -0.1f, 0.1f});
+	va.AddData({ 0.1f, 0.1f});
 
 	unsigned int indices[] = {
 		0,1,2,2,3,0
@@ -118,11 +113,18 @@ int main() {
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, va.Cols * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, va.Cols * sizeof(float), (void*)(2 * sizeof(float)));
+	glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInst"));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(1, 1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, va.Cols * sizeof(float), (void*)(5 * sizeof(float)));
-	glEnableVertexAttribArray(2);
+
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, va.Cols * sizeof(float), (void*)(2 * sizeof(float)));
+	//glEnableVertexAttribArray(1);
+
+	//glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, va.Cols * sizeof(float), (void*)(5 * sizeof(float)));
+	//glEnableVertexAttribArray(2);
 
 	//testVertices.PushVertexRow({0.4f, -0.1f, 1.0f, 0, 0, 0.3f, 0});
 	//testVertices.PushVertexRow({0.2f, -0.1f, 1.0f, 0, 0, 0.3f, 0});
@@ -173,7 +175,7 @@ int main() {
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		//	glBindVertexArray(dat.DynamicVAO);
 		glBindVertexArray(vm.VertexArrayObjects.find("testVertices")->second);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 100);
 		//    glBindVertexArray(0);
 		glDisable(GL_BLEND);
 

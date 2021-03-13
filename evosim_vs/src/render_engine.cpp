@@ -57,3 +57,15 @@ void EvoSim::VertexManager::CreateBufferObj(std::string name, BufferType type) {
 		CreateBufferObj(this->VertexElementBuffers[name]);
 	}
 }
+
+GLuint EvoSim::VertexManager::GetElementBuffer(std::string name) {
+	return this->VertexElementBuffers.find(name)->second;
+}
+
+GLuint EvoSim::VertexManager::GetArrayBuffer(std::string name) {
+	return this->VertexArrayBuffers.find(name)->second;
+}
+
+GLuint EvoSim::VertexManager::GetArrayObject(std::string name) {
+	return this->VertexArrayObjects.find(name)->second;
+}
