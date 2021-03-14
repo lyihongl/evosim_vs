@@ -6,6 +6,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <thread>
+#include <cstdlib>
+#include <ctime>
 
 #include "../inc/shader.h"
 #include "../inc/vertex.h"
@@ -35,6 +37,7 @@ int main() {
 	}
 
 	*/
+	std::srand(std::time(nullptr));
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -72,6 +75,7 @@ int main() {
 	vm.CreateBufferObj("vBuf", EvoSim::VertexManager::BufferType::Vertex);
 	vm.CreateBufferObj("eBuf", EvoSim::VertexManager::BufferType::Element);
 	vm.CreateBufferObj("vInst", EvoSim::VertexManager::BufferType::Vertex);
+	vm.CreateBufferObj("vInstColor", EvoSim::VertexManager::BufferType::Vertex);
 	log(vm.VertexArrayObjects.find("testVertices")->second);
 	log(vm.VertexArrayBuffers.find("vBuf")->second);
 	log(vm.VertexElementBuffers.find("eBuf")->second);
@@ -81,20 +85,31 @@ int main() {
 	}
 
 	std::vector<glm::vec2> positions;
+	std::vector<glm::vec3> colors;
 	for (int i = 0; i < 10; i++) {
 		for (int j = 0; j < 10; j++) {
-			positions.push_back({ (float)i / 5 - 1, (float)j / 5 - 1});
+			positions.push_back({ (float)i * 30, (float)j * 30 });
+			colors.push_back({ (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX });
+			log(colors.back().x);
 			log(positions.back().x);
 		}
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInst"));
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, positions.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, nullptr, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	va.AddData({ 0.1f, -0.1f});
-	va.AddData({ -0.1f, -0.1f});
-	va.AddData({ -0.1f, 0.1f});
-	va.AddData({ 0.1f, 0.1f});
+	glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInstColor"));
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 100, nullptr, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	va.AddData({ 10, -10});
+	va.AddData({ -10, -10});
+	va.AddData({ -10, 10});
+	va.AddData({ 10, 10});
+	//va.AddData({ 0.1f, -0.1f});
+	//va.AddData({ -0.1f, -0.1f});
+	//va.AddData({ -0.1f, 0.1f});
+	//va.AddData({ 0.1f, 0.1f});
 
 	unsigned int indices[] = {
 		0,1,2,2,3,0
@@ -116,8 +131,14 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInst"));
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInstColor"));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(2);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glVertexAttribDivisor(1, 1);
+	glVertexAttribDivisor(2, 1);
 
 
 	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, va.Cols * sizeof(float), (void*)(2 * sizeof(float)));
@@ -142,24 +163,39 @@ int main() {
 	//testVertices.BufferStaticData();
 
 	unsigned int scaleLoc = glGetUniformLocation(shader.ID, "scale");
+	unsigned int orthoLoc = glGetUniformLocation(shader.ID, "ortho");
 
 	// render loop
 	// -----------
 
 	glm::mat4 trans = glm::mat4(1.0f);
 	glm::mat4 scale;
-	glm::vec3 scaleVec(9.0f / 16.0f * 0.2f, 1.0f, 0.5f);
+	glm::vec3 scaleVec(1.0f, 16.0f / 9.0f * 0.2f, 0.5f);
 	while (!glfwWindowShouldClose(window.get())) {
 		// input
 		// -----
+		positions[51].x += 1;
+		//log(positions[51].x);
+		//glBindVertexArray(vm.GetArrayObject("testVertices"));
+		glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInst"));
+		glBufferSubData(GL_ARRAY_BUFFER, 0, 100 * sizeof(glm::vec2), positions.data());
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInstColor"));
+		glBufferSubData(GL_ARRAY_BUFFER, 0, 100 * sizeof(glm::vec3), colors.data());
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//glBindVertexArray(0);
 		GLint m_viewport[4];
 		glGetIntegerv(GL_VIEWPORT, m_viewport);
 		processInput(window.get());
 
-		scaleVec[0] = (float)(m_viewport[3]) / (float)(m_viewport[2]);
+		scaleVec[1] = (float)(m_viewport[2]) / (float)(m_viewport[3]);
 		scale = glm::scale(trans, scaleVec);
 
 		glUniformMatrix4fv(scaleLoc, 1, GL_FALSE, glm::value_ptr(scale));
+
+		glm::mat4 orthoProjection = glm::ortho(0.0f, (float)(m_viewport[2]), 0.0f, (float)(m_viewport[3]));
+		glUniformMatrix4fv(orthoLoc, 1, GL_FALSE, glm::value_ptr(orthoProjection));
+		
 
 		// render
 		// ------

@@ -11,7 +11,7 @@ float draw_circle(vec2 coord, float radius) {
 
 void main()
 {
-    float R = 0.05;
+    float R = 10;
 
     if(length(position-center) > R){
         discard;
