@@ -156,6 +156,7 @@
   <ItemGroup>
     <ClInclude Include="inc\circle.h" />
     <ClInclude Include="inc\logging.h" />
+    <ClInclude Include="inc\texture.h" />
     <ClInclude Include="inc\vertex.h" />
     <ClInclude Include="inc\shader.h" />
   </ItemGroup>

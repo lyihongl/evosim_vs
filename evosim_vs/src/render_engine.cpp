@@ -24,6 +24,15 @@
 EvoSim::VertexManager::VertexManager() {
 }
 
+EvoSim::VertexManager::~VertexManager() {
+	for (auto &it : VertexArrayBuffers) {
+		glDeleteBuffers(1, &it.second);
+	}
+	for (auto& it : VertexArrayObjects) {
+		glDeleteVertexArrays(1, &it.second);
+	}
+}
+
 void EvoSim::VertexManager::CreateArrayObj(GLuint& id) {
 	glGenVertexArrays(1, &id);
 	log("created VAO with id: " << id);
@@ -41,25 +50,19 @@ void EvoSim::VertexManager::CreateArrayObj(std::string name) {
 	CreateArrayObj(this->VertexArrayObjects[name]);
 }
 
-void EvoSim::VertexManager::CreateBufferObj(std::string name, BufferType type) {
-	if (type == BufferType::Vertex) {
-		if (this->VertexArrayBuffers.find(name) != this->VertexArrayBuffers.end()) {
-			log("Vertex array buffer already exists");
-			return;
-		}
-		CreateBufferObj(this->VertexArrayBuffers[name]);
+void EvoSim::VertexManager::CreateBufferObj(std::string name) {
+	if (this->VertexArrayBuffers.find(name) != this->VertexArrayBuffers.end()) {
+		log("Vertex array buffer already exists");
+		return;
 	}
-	else {
-		if (this->VertexElementBuffers.find(name) != this->VertexElementBuffers.end()) {
-			log("Vertex array buffer already exists");
-			return;
-		}
-		CreateBufferObj(this->VertexElementBuffers[name]);
-	}
+	CreateBufferObj(this->VertexArrayBuffers[name]);
 }
 
-GLuint EvoSim::VertexManager::GetElementBuffer(std::string name) {
-	return this->VertexElementBuffers.find(name)->second;
+void EvoSim::VertexManager::CreateBufferObj(std::string name, GLsizeiptr size) {
+	CreateBufferObj(name);
+	glBindBuffer(GL_ARRAY_BUFFER, this->GetArrayBuffer(name));
+	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 GLuint EvoSim::VertexManager::GetArrayBuffer(std::string name) {

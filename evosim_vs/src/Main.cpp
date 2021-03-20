@@ -42,6 +42,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_RESIZABLE, false);
 
 	//glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f, 0.5f, 0.5f));
 	//trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
@@ -57,7 +58,7 @@ int main() {
 		return -1;
 	}
 	glfwMakeContextCurrent(window.get());
-	glfwSetFramebufferSizeCallback(window.get(), framebuffer_size_callback);
+	//glfwSetFramebufferSizeCallback(window.get(), framebuffer_size_callback);
 
 	// glad: load all OpenGL function pointers
 	// ---------------------------------------
@@ -72,13 +73,11 @@ int main() {
 	EvoSim::VertexManager vm{};
 
 	vm.CreateArrayObj("testVertices");
-	vm.CreateBufferObj("vBuf", EvoSim::VertexManager::BufferType::Vertex);
-	vm.CreateBufferObj("eBuf", EvoSim::VertexManager::BufferType::Element);
-	vm.CreateBufferObj("vInst", EvoSim::VertexManager::BufferType::Vertex);
-	vm.CreateBufferObj("vInstColor", EvoSim::VertexManager::BufferType::Vertex);
+	vm.CreateBufferObj("vBuf");
+	vm.CreateBufferObj("eBuf");
 	log(vm.VertexArrayObjects.find("testVertices")->second);
 	log(vm.VertexArrayBuffers.find("vBuf")->second);
-	log(vm.VertexElementBuffers.find("eBuf")->second);
+	//log(vm.VertexElementBuffers.find("eBuf")->second);
 
 	for (auto it : va.Data) {
 		log("data " << it);
@@ -88,19 +87,21 @@ int main() {
 	std::vector<glm::vec3> colors;
 	for (int i = 0; i < 10; i++) {
 		for (int j = 0; j < 10; j++) {
-			positions.push_back({ (float)i * 30, (float)j * 30 });
+			positions.push_back({ (float)i * 30+300, (float)j * 30 + 300});
 			colors.push_back({ (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX, (float)std::rand() / RAND_MAX });
 			log(colors.back().x);
 			log(positions.back().x);
 		}
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInst"));
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, nullptr, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	vm.CreateBufferObj("vInst", sizeof(glm::vec2)*100);
+	vm.CreateBufferObj("vInstColor", sizeof(glm::vec3)*100);
+	//glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInst"));
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, nullptr, GL_DYNAMIC_DRAW);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInstColor"));
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 100, nullptr, GL_DYNAMIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInstColor"));
+	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 100, nullptr, GL_DYNAMIC_DRAW);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	va.AddData({ 10, -10});
 	va.AddData({ -10, -10});
@@ -121,7 +122,7 @@ int main() {
 	glBufferData(GL_ARRAY_BUFFER, va.Data.size() * sizeof(float), va.Data.data(), GL_STATIC_DRAW);
 	log("va size:" << va.Data.size());
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vm.VertexElementBuffers.find("eBuf")->second);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vm.GetArrayBuffer("eBuf"));
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	log("cols" << va.Cols);
@@ -174,14 +175,14 @@ int main() {
 	while (!glfwWindowShouldClose(window.get())) {
 		// input
 		// -----
-		positions[51].x += 1;
+		//positions[51].x += 1;
 		//log(positions[51].x);
 		//glBindVertexArray(vm.GetArrayObject("testVertices"));
 		glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInst"));
-		glBufferSubData(GL_ARRAY_BUFFER, 0, 100 * sizeof(glm::vec2), positions.data());
+		glBufferSubData(GL_ARRAY_BUFFER, 0, positions.size() * sizeof(glm::vec2), positions.data());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindBuffer(GL_ARRAY_BUFFER, vm.GetArrayBuffer("vInstColor"));
-		glBufferSubData(GL_ARRAY_BUFFER, 0, 100 * sizeof(glm::vec3), colors.data());
+		glBufferSubData(GL_ARRAY_BUFFER, 0, colors.size() * sizeof(glm::vec3), colors.data());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		//glBindVertexArray(0);
 		GLint m_viewport[4];
